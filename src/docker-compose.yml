@@ -41,7 +41,7 @@ services:
     depends_on:
       - jaeger
       - postgres
-      - redis 
+      - redis
       - mongo
     networks:
       - app_network
@@ -49,18 +49,20 @@ services:
   postgres:
     image: postgres:14.1-alpine
     restart: always
+    container_name: postgres
     environment:
       - POSTGRES_USER=auuntoo
       - POSTGRES_PASSWORD=auuntoo
+      - POSTGRES_DB=otel_practice
     ports:
       - '5432:5432'
-    # volumes:
-    #   - db:/var/lib/postgresql/data
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     depends_on:
       - jaeger
     networks:
       - app_network
-      
+
   redis:
     image: redis
     container_name: redis
@@ -88,7 +90,7 @@ services:
       - jaeger
     networks:
       - app_network
-      
+
   service_a:
     build:
       context: ./service-a
@@ -123,4 +125,3 @@ networks:
 #   db:
 #     driver: local
 #   mongodb_data_volume:
-#     driver: local
