@@ -4,7 +4,7 @@ from flask import Flask, jsonify, request
 from random import randint
 import json
 from opentelemetry import trace
-from datetime import datetime
+import time
 
 from tracer import configure_tracer
 configure_tracer(service_name="service-a")
@@ -14,7 +14,7 @@ from libs.mongo import get_mongo_collection
 from libs.redis import redis_client
 from libs.pg import pg_client   
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
-from prometheus_client import make_wsgi_app, Counter
+from prometheus_client import make_wsgi_app, Counter, Histogram
 
 tracer = trace.get_tracer(__name__)
 
@@ -29,8 +29,15 @@ app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {
 
 POST_CREATE_COUNTER = Counter('post_create', 'Number of post created')
 
+REQUEST_LATENCY = Histogram(
+    'feed_latency',
+    'Application Request Latency'
+)
+
 @app.route('/api/feed/<customer_id>', methods=['GET'])
 def get_feed_by_user_id(customer_id):
+    start_time = time.time()
+
     page = request.args.get('page', default=1, type=int)
     limit = request.args.get('limit', default=10, type=int)
 
@@ -54,6 +61,7 @@ def get_feed_by_user_id(customer_id):
 
             return jsonify({'error': str(e)}), 500
         finally:
+            REQUEST_LATENCY.observe(time.time() - start_time)
             main_span.end()
 
 
