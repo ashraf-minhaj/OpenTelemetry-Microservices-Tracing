@@ -1,5 +1,17 @@
 version: '3'
 services:
+  prometheus:
+    image: "prom/prometheus"
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - app_network
+    depends_on:
+      - service_a
+      - service_b
+
   grafana:
     image: grafana/grafana:latest
     ports:
@@ -8,6 +20,8 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=admin
     depends_on:
       - jaeger
+      - service_a
+      - service_b
     networks:
       - app_network
 
@@ -127,7 +141,7 @@ services:
   service_a:
     # build:
     #   context: ./service-a
-    image: ashraftheminhaj/service-a:v2
+    image: ashraftheminhaj/service-a:v3
     ports:
       - 5001:5001
     depends_on:
@@ -141,7 +155,7 @@ services:
   service_b:
     # build:
     #   context: ./service-b
-    image: ashraftheminhaj/service-b:v2
+    image: ashraftheminhaj/service-b:v3
     ports:
       - 5002:5002
     depends_on:

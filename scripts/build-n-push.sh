@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # VERSION_TAG=$1
-VERSION_TAG=v2
+# prv stable: v2
+VERSION_TAG=v3
 
 cd ../src/service-a
 
