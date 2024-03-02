@@ -3,7 +3,7 @@ import psycopg2
 DB_NAME = "otel_practice"
 DB_USER = "auuntoo"
 DB_PASS = "auuntoo"
-DB_HOST = "localhost"
+DB_HOST = "postgres"
 DB_PORT = "5432"
 
 print("Initializing pg connection")
