@@ -16,7 +16,8 @@ from libs.pg import pg_client
 
 tracer = trace.get_tracer(__name__)
 
-URL_SVC_B = 'http://localhost:5002'
+# URL_SVC_B = 'http://localhost:5002'
+URL_SVC_B = 'http://service_b:5002'
 
 app = Flask(__name__)
 
