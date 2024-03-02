@@ -28,10 +28,10 @@ def configure_tracer(service_name: str):
         BatchSpanProcessor(jaeger_exporter)
     )
 
-    RedisInstrumentor().instrument()
-    Psycopg2Instrumentor().instrument()
+    # RedisInstrumentor().instrument()
+    # Psycopg2Instrumentor().instrument()
     RequestsInstrumentor().instrument()
-    PymongoInstrumentor().instrument()
+    # PymongoInstrumentor().instrument()
     PikaInstrumentor().instrument()
 
     print("Tracing initialized")
