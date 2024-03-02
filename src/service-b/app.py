@@ -15,6 +15,7 @@ from libs.pg import get_pg_connection
 from libs.mongo import get_mongo_collection
 from bson import json_util
 import json
+import psycopg2
 
 app = Flask(__name__)
 
@@ -64,9 +65,18 @@ def handle_post_create_event(ch, method, properties, body):
                 with tracer.start_as_current_span("inserting_post_to_pg_for_analytics") as pg_span:
                     conn = get_pg_connection()
                     cur = conn.cursor()
-                    cur.execute("INSERT INTO user_posts (customer_id, title, content) VALUES (%s, %s, %s)", (message['customer_id'], message['title'], message['content']))
-                    conn.commit()
-                    cur.close()
+                    # cur.execute("INSERT INTO user_posts (customer_id, title, content) VALUES (%s, %s, %s)", (message['customer_id'], message['title'], message['content']))
+                    # conn.commit()
+                    # cur.close()
+
+                    try:
+                        cur.execute("INSERT INTO user_posts (customer_id, title, content) VALUES (%s, %s, %s)", (message['customer_id'], message['title'], message['content']))
+                        conn.commit()
+                    except psycopg2.DatabaseError as e:
+                        print("Error: ", e)
+                        conn.rollback()
+                    finally:
+                        cur.close()
 
                     pg_span.end()
 
