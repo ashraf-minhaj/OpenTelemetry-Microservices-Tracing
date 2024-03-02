@@ -30,6 +30,8 @@ def get_feed_by_user_id(customer_id):
     with tracer.start_as_current_span("getting_feed_service-a") as main_span:
         try:
 
+            main_span.set_attribute('customer_id', customer_id)
+
             headers = {}
             propagator = TraceContextTextMapPropagator()
             propagator.inject(carrier=headers)
