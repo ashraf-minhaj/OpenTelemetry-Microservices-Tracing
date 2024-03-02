@@ -1,0 +1,44 @@
+version: '3'
+services:
+  rabbitmq:
+    image: "rabbitmq:3-management-alpine"
+    # domainname: rabbitmq.com
+    ports:
+      - "5672:5672"    # RabbitMQ default port
+      - "15672:15672"  # RabbitMQ management UI
+    networks:
+      - app_network
+    healthcheck:
+      test: rabbitmq-diagnostics check_port_connectivity
+      interval: 1s
+      timeout: 3s
+      retries: 30
+    depends_on:
+      - jaeger
+
+  service_a:
+    build:
+      context: ./service-a
+    ports:
+      - 5001:5001
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+    networks:
+      - app_network
+
+  service_b:
+    build:
+      context: ./service-b
+    ports:
+      - 5002:5002
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    driver: bridge
