@@ -13,6 +13,8 @@ from libs.rabbitmq import rabbitmq_client
 from libs.mongo import get_mongo_collection
 from libs.redis import redis_client
 from libs.pg import pg_client   
+from werkzeug.middleware.dispatcher import DispatcherMiddleware
+from prometheus_client import make_wsgi_app, Counter
 
 tracer = trace.get_tracer(__name__)
 
@@ -21,6 +23,11 @@ URL_SVC_B = 'http://service_b:5002'
 
 app = Flask(__name__)
 
+app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {
+    '/metrics': make_wsgi_app()
+})
+
+POST_CREATE_COUNTER = Counter('post_create', 'Number of post created')
 
 @app.route('/api/feed/<customer_id>', methods=['GET'])
 def get_feed_by_user_id(customer_id):
@@ -54,7 +61,13 @@ def get_feed_by_user_id(customer_id):
 def insert_user(customer_id):
     with tracer.start_as_current_span("create_new_post") as main_span:
         try:
+            POST_CREATE_COUNTER.inc()
+
             request_data = request.get_json()
+
+            if not request_data.get('content') or not request_data.get('title'):
+                raise Exception('content and title are required')
+            
             post_data = {
                 'content': request_data.get('content'),
                 'title': request_data.get('title'),

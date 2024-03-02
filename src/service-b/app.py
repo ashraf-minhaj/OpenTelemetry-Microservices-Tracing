@@ -31,6 +31,9 @@ def get_customer_by_id(customer_id):
     with tracer.start_as_current_span("getting_feed_service-b", context=ctx) as main_span:
         try:
             main_span.set_attribute('customer_id', customer_id)
+
+            if(customer_id == 'hacker'):
+                raise Exception('Unauthorized access!')
             
             cached = redis_client.get(f'customer:{customer_id}:posts:{page}:{limit}')
             if cached:

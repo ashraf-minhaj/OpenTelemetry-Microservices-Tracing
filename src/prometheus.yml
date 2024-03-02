@@ -1,0 +1,12 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 30s
+scrape_configs:
+  - job_name: service_a
+    static_configs:
+      - targets:
+        - service_a:5001
+  - job_name: service_b
+    static_configs:
+      - targets:
+        - service_b:5002

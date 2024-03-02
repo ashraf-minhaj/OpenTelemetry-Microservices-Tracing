@@ -15,3 +15,5 @@ opentelemetry-instrumentation-flask
 opentelemetry-instrumentation-pymongo
 pymongo
 opentelemetry-instrumentation-pika
+prometheus_client
+uwsgi
