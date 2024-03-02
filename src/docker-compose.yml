@@ -102,24 +102,33 @@ services:
       - app_network
 
   service_a:
-    build:
-      context: ./service-a
+    # build:
+    #   context: ./service-a
+    image: ashraftheminhaj/service-a:v2
     ports:
       - 5001:5001
     depends_on:
       rabbitmq:
         condition: service_healthy
+      # service_b:
+      #   condition: service_healthy
     networks:
       - app_network
 
   service_b:
-    build:
-      context: ./service-b
+    # build:
+    #   context: ./service-b
+    image: ashraftheminhaj/service-b:v2
     ports:
       - 5002:5002
     depends_on:
       rabbitmq:
         condition: service_healthy
+    # healthcheck:
+    #   test: ["CMD", "curl", "--fail", "http://localhost:5002/health"]
+    #   interval: 10s
+    #   timeout: 5s
+    #   retries: 3
     networks:
       - app_network
 
