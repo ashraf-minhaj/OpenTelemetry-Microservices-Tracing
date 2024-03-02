@@ -4,6 +4,7 @@ from flask import Flask, jsonify, request
 from random import randint
 import json
 from opentelemetry import trace
+from datetime import datetime
 
 from tracer import configure_tracer
 configure_tracer(service_name="service-a")
@@ -22,7 +23,8 @@ app = Flask(__name__)
 
 @app.route('/api/feed/<customer_id>', methods=['GET'])
 def get_feed_by_user_id(customer_id):
-    tracer = trace.get_tracer(__name__)
+    page = request.args.get('page', default=1, type=int)
+    limit = request.args.get('limit', default=10, type=int)
 
     with tracer.start_as_current_span("getting_feed_service-a") as main_span:
         try:
@@ -32,7 +34,7 @@ def get_feed_by_user_id(customer_id):
             propagator.inject(carrier=headers)
 
             customer_data_response = requests.get(
-                f'{URL_SVC_B}/api/feed/{customer_id}', headers=headers)
+                f'{URL_SVC_B}/api/feed/{customer_id}?page={page}&limit={limit}', headers=headers)
             customer_data = customer_data_response.json()
 
             return jsonify(customer_data)
@@ -47,8 +49,7 @@ def get_feed_by_user_id(customer_id):
 
 @app.route('/api/<customer_id>/post', methods=['POST'])
 def insert_user(customer_id):
-    tracer = trace.get_tracer(__name__)
-    with tracer.start_as_current_span("insert_user") as main_span:
+    with tracer.start_as_current_span("create_new_post") as main_span:
         try:
             request_data = request.get_json()
             post_data = {
@@ -56,6 +57,8 @@ def insert_user(customer_id):
                 'title': request_data.get('title'),
                 'customer_id': customer_id
             }
+
+            main_span.set_attribute('customer_id', customer_id)
 
             rabbitmq_client.basic_publish(
                 exchange='', routing_key='post_create_queue', body=json.dumps(post_data))
