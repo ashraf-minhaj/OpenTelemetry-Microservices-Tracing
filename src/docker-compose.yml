@@ -23,9 +23,9 @@ services:
     ports:
       - '5672:5672'
       - '15672:15672'
-    volumes:
-      - 'rabbitmq_data:/var/lib/rabbitmq'
-      - 'rabbitmq_log:/var/log/rabbitmq'
+    # volumes:
+    #   - 'rabbitmq_data:/var/lib/rabbitmq'
+    #   - 'rabbitmq_log:/var/log/rabbitmq'
     environment:
       - RABBITMQ_DEFAULT_USER=auuntoo
       - RABBITMQ_DEFAULT_PASS=auuntoo
@@ -38,7 +38,7 @@ services:
     depends_on:
       - jaeger
       - postgres
-      - redis 
+      - redis
       - mongo
     networks:
       - app_network
@@ -46,18 +46,22 @@ services:
   postgres:
     image: postgres:14.1-alpine
     restart: always
+    container_name: postgres
     environment:
       - POSTGRES_USER=auuntoo
       - POSTGRES_PASSWORD=auuntoo
+      - POSTGRES_DB=otel_practice
     ports:
       - '5432:5432'
+    # volumes:
+    #   - db:/var/lib/postgresql/data
     volumes:
-      - db:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     depends_on:
       - jaeger
     networks:
       - app_network
-      
+
   redis:
     image: redis
     container_name: redis
@@ -76,16 +80,16 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: auuntoo
     ports:
       - '27017:27017'
-    volumes:
-      - ./workspace:/workspace
-      - type: volume
-        source: mongodb_data_volume
-        target: /data/db
+    # volumes:
+    #   - ./workspace:/workspace
+    #   - type: volume
+    #     source: mongodb_data_volume
+    #     target: /data/db
     depends_on:
       - jaeger
     networks:
       - app_network
-      
+
   service_a:
     build:
       context: ./service-a
@@ -111,13 +115,12 @@ services:
 networks:
   app_network:
     driver: bridge
-
-volumes:
-  rabbitmq_data:
-    driver: local
-  rabbitmq_log:
-    driver: local
-  db:
-    driver: local
-  mongodb_data_volume:
-    driver: local
+# volumes:
+#   rabbitmq_data:
+#     driver: local
+#   rabbitmq_log:
+#     driver: local
+#   db:
+#     driver: local
+#   mongodb_data_volume:
+#     driver: local
