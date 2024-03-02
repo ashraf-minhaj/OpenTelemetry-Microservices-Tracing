@@ -62,6 +62,14 @@ services:
       - jaeger
     networks:
       - app_network
+    
+  adminer:
+    image: adminer:latest
+    restart: always
+    depends_on:
+      - postgres
+    ports:
+      - 4000:8080
 
   redis:
     image: redis

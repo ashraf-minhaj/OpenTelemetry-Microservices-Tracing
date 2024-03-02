@@ -1,1 +1,8 @@
 CREATE DATABASE IF NOT EXISTS `otel_practice` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS user_posts (
+  id SERIAL PRIMARY KEY,
+  title VARCHAR(256) NOT NULL,
+  content TEXT NOT NULL,
+  customer_id VARCHAR(256) NOT NULL
+);
