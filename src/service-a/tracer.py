@@ -20,8 +20,8 @@ def configure_tracer(service_name: str):
 
     jaeger_exporter = JaegerExporter(
         agent_host_name="localhost",
-        agent_port=6831,
-        collector_endpoint="http://localhost:14268/api/traces",
+        agent_port=6831
+        # collector_endpoint="http://localhost:14268/api/traces",
     )
 
     trace.get_tracer_provider().add_span_processor(
