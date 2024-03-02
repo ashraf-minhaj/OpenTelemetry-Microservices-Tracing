@@ -1,0 +1,17 @@
+flask
+pika
+opentelemetry-api
+opentelemetry-sdk
+opentelemetry-instrumentation
+opentelemetry-exporter-jaeger
+opentelemetry-instrumentation-redis
+opentelemetry-instrumentation-psycopg2
+opentelemetry-distro
+redis
+psycopg2-binary
+requests
+opentelemetry-instrumentation-requests
+opentelemetry-instrumentation-flask
+opentelemetry-instrumentation-pymongo
+pymongo
+opentelemetry-instrumentation-pika

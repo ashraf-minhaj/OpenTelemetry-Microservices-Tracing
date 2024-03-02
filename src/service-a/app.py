@@ -1,19 +1,74 @@
-from flask import Flask, jsonify
+from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapPropagator
 import requests
+from flask import Flask, jsonify, request
+from random import randint
+import json
+from opentelemetry import trace
+
+from tracer import configure_tracer
+configure_tracer(service_name="service-a")
+
+from libs.rabbitmq import rabbitmq_client
+from libs.mongo import get_mongo_collection
+from libs.redis import redis_client
+from libs.pg import pg_client   
+
+tracer = trace.get_tracer(__name__)
+
+URL_SVC_B = 'http://localhost:5002'
 
 app = Flask(__name__)
 
-SERVICE_TWO_URL = 'http://localhost:5001'  # Replace with the actual URL of service_two
 
-@app.route('/api/get_data', methods=['GET'])
-def get_data():
-    # Call service_two to fetch data
-    response_from_service_two = requests.get(f'{SERVICE_TWO_URL}/api/fetch_data')
+@app.route('/api/feed/<customer_id>', methods=['GET'])
+def get_feed_by_user_id(customer_id):
+    tracer = trace.get_tracer(__name__)
 
-    # Process the data or perform additional tasks if needed
-    processed_data = f"Processed data from service_two: {response_from_service_two.json()}"
+    with tracer.start_as_current_span("getting_feed_service-a") as main_span:
+        try:
 
-    return jsonify({'result': processed_data})
+            headers = {}
+            propagator = TraceContextTextMapPropagator()
+            propagator.inject(carrier=headers)
+
+            customer_data_response = requests.get(
+                f'{URL_SVC_B}/api/feed/{customer_id}', headers=headers)
+            customer_data = customer_data_response.json()
+
+            return jsonify(customer_data)
+        except Exception as e:
+            main_span.record_exception(e)
+            main_span.set_status(trace.Status(trace.StatusCode.ERROR, str(e)))
+
+            return jsonify({'error': str(e)}), 500
+        finally:
+            main_span.end()
+
+
+@app.route('/api/<customer_id>/post', methods=['POST'])
+def insert_user(customer_id):
+    tracer = trace.get_tracer(__name__)
+    with tracer.start_as_current_span("insert_user") as main_span:
+        try:
+            request_data = request.get_json()
+            post_data = {
+                'content': request_data.get('content'),
+                'title': request_data.get('title'),
+                'customer_id': customer_id
+            }
+
+            rabbitmq_client.basic_publish(
+                exchange='', routing_key='post_create_queue', body=json.dumps(post_data))
+
+            return jsonify({'message': 'Post is creating'})
+        except Exception as e:
+            main_span.record_exception(e)
+            main_span.set_status(trace.Status(trace.StatusCode.ERROR, str(e)))
+
+            return jsonify({'error': str(e)}), 500
+        finally:
+            main_span.end()
+
 
 if __name__ == '__main__':
-    app.run(port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5001)
