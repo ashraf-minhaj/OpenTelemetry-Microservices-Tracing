@@ -2,7 +2,7 @@
 
 # VERSION_TAG=$1
 # prv stable: v2
-VERSION_TAG=v3
+VERSION_TAG=v4
 
 cd ../src/service-a
 

@@ -141,7 +141,7 @@ services:
   service_a:
     # build:
     #   context: ./service-a
-    image: ashraftheminhaj/service-a:v3
+    image: ashraftheminhaj/service-a:v4
     ports:
       - 5001:5001
     depends_on:
@@ -155,7 +155,7 @@ services:
   service_b:
     # build:
     #   context: ./service-b
-    image: ashraftheminhaj/service-b:v3
+    image: ashraftheminhaj/service-b:v4
     ports:
       - 5002:5002
     depends_on:
